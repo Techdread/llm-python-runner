@@ -1,0 +1,6 @@
+{
+  "llmApi": {
+    "endpoint": "YOUR_LLM_API_ENDPOINT",
+    "apiKey": "YOUR_API_KEY"
+  }
+}

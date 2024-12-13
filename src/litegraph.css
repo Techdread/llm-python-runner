@@ -1,0 +1,67 @@
+.node-panel {
+    color: #eee;
+    padding: 6px;
+}
+
+.node-panel input {
+    width: 100%;
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    color: #eee;
+    padding: 4px;
+}
+
+/* LiteGraph node styles */
+.litegraph .node {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.litegraph .node:hover {
+    border-color: #666;
+}
+
+.litegraph .node .title {
+    color: white;
+    font-size: 14px;
+    padding: 8px;
+    background-color: #444;
+    border-radius: 6px 6px 0 0;
+}
+
+.litegraph .node .content {
+    padding: 8px;
+}
+
+.litegraph .connection {
+    stroke: #aaa;
+    stroke-width: 2px;
+}
+
+.litegraph .connection:hover {
+    stroke: #fff;
+    stroke-width: 3px;
+}
+
+/* Context menu styles */
+.litecontextmenu {
+    position: fixed;
+    z-index: 10;
+    padding: 4px;
+    background-color: #2a2a2a;
+    border: 1px solid #111;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    color: #eee;
+}
+
+.litecontextmenu li {
+    padding: 2px 8px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.litecontextmenu li:hover {
+    background-color: #444;
+}
