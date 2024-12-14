@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { formatCode, extractPythonCode } from '../utils/codeFormatting';
 
 const PROVIDER_ENDPOINTS = {
   OpenAI: 'https://api.openai.com/v1/chat/completions',
@@ -33,20 +34,30 @@ function formatPromptForProvider(prompt, provider) {
 
 function extractCodeFromResponse(data, provider) {
   try {
+    let rawCode;
     switch (provider) {
       case 'OpenAI':
       case 'OpenAI Compatible':
-        return data.choices[0].message.content.trim();
+        rawCode = data.choices[0].message.content.trim();
+        break;
 
       case 'Anthropic':
-        return data.content[0].text.trim();
+        rawCode = data.content[0].text.trim();
+        break;
 
       case 'Google Gemini':
-        return data;
+        rawCode = data;
+        break;
 
       default:
         throw new Error('Unsupported provider');
     }
+
+    // First try to extract Python code if the response contains explanations
+    let code = extractPythonCode(rawCode);
+    
+    // Then format the code and remove any remaining markers
+    return formatCode(code, provider);
   } catch (error) {
     console.error('Error extracting code from response:', error);
     throw new Error('Invalid response format from provider');
