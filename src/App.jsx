@@ -5,9 +5,11 @@ import MainLayout from './layouts/MainLayout';
 import CodeEditorPage from './pages/CodeEditorPage';
 import VisualEditorPage from './pages/VisualEditorPage';
 import { ThemeProvider } from './context/ThemeContext';
+import { LLMProvider } from './context/LLMContext';
 import { lightTheme, darkTheme } from './theme';
 import { useThemeMode } from './context/ThemeContext';
-import config from './config.json';
+import { useLLM } from './context/LLMContext';
+import { generateCode } from './services/llmService';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
@@ -15,6 +17,7 @@ import '@fontsource/roboto/700.css';
 
 function ThemedApp() {
   const { isDarkMode } = useThemeMode();
+  const { config } = useLLM();
   const [loading, setLoading] = useState(false);
   const [output, setOutput] = useState('');
   const [prompt, setPrompt] = useState('');
@@ -39,28 +42,20 @@ function ThemedApp() {
       return;
     }
 
+    if (!config) {
+      setError('Please configure an LLM provider in settings first');
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(config.llmApi.endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${config.llmApi.apiKey}`,
-        },
-        body: JSON.stringify({ prompt }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get response from LLM API');
-      }
-
-      const data = await response.json();
-      setCode(data.code);
+      const generatedCode = await generateCode(prompt, config);
+      setCode(generatedCode);
       setOutput('Code generated successfully! You can now edit and run it.');
     } catch (error) {
-      console.error('Failed to get code from LLM:', error);
-      setError('Failed to generate code from prompt: ' + error.message);
+      console.error('Failed to generate code:', error);
+      setError('Failed to generate code: ' + error.message);
     }
     setLoading(false);
   };
@@ -126,7 +121,9 @@ function ThemedApp() {
 function App() {
   return (
     <ThemeProvider>
-      <ThemedApp />
+      <LLMProvider>
+        <ThemedApp />
+      </LLMProvider>
     </ThemeProvider>
   );
 }

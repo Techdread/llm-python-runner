@@ -14,7 +14,8 @@ import {
   Toolbar, 
   Typography,
   useTheme,
-  Tooltip
+  Tooltip,
+  Divider
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -22,17 +23,22 @@ import {
   AccountTree as TreeIcon,
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useThemeMode } from '../context/ThemeContext';
+import { useLLM } from '../context/LLMContext'; // Import the LLM context hook
+import SettingsDialog from '../components/settings/SettingsDialog';
 
 const drawerWidth = 240;
 
 export default function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const theme = useTheme();
   const navigate = useNavigate();
   const { isDarkMode, toggleTheme } = useThemeMode();
+  const { updateConfig } = useLLM(); // Get the updateConfig function from the LLM context
 
   const menuItems = [
     { text: 'Code Editor', icon: <CodeIcon />, path: '/' },
@@ -41,6 +47,11 @@ export default function MainLayout() {
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleProviderSelected = (config) => {
+    // Update the LLM context
+    updateConfig(config);
   };
 
   const drawer = (
@@ -84,6 +95,11 @@ export default function MainLayout() {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             LLM Python Runner
           </Typography>
+          <Tooltip title="Settings">
+            <IconButton color="inherit" onClick={() => setSettingsOpen(true)} sx={{ mr: 1 }}>
+              <SettingsIcon />
+            </IconButton>
+          </Tooltip>
           <Tooltip title={`Switch to ${isDarkMode ? 'light' : 'dark'} theme`}>
             <IconButton color="inherit" onClick={toggleTheme}>
               {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
@@ -133,6 +149,13 @@ export default function MainLayout() {
         <Toolbar />
         <Outlet />
       </Box>
+      
+      <SettingsDialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        initialProvider={JSON.parse(localStorage.getItem('llm-provider-config') || 'null')}
+        onProviderSelected={handleProviderSelected}
+      />
     </Box>
   );
 }
