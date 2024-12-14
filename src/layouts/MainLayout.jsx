@@ -24,6 +24,7 @@ import {
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
   Settings as SettingsIcon,
+  History as HistoryIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useThemeMode } from '../context/ThemeContext';
@@ -43,6 +44,7 @@ export default function MainLayout() {
   const menuItems = [
     { text: 'Code Editor', icon: <CodeIcon />, path: '/' },
     { text: 'Visual Editor', icon: <TreeIcon />, path: '/visual-editor' },
+    { text: 'Prompt History', icon: <HistoryIcon />, path: '/prompt-history' },
   ];
 
   const handleDrawerToggle = () => {

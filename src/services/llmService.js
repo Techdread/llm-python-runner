@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { formatCode, extractPythonCode } from '../utils/codeFormatting';
+import { savePrompt } from '../utils/promptHistoryStorage';
 
 const PROVIDER_ENDPOINTS = {
   OpenAI: 'https://api.openai.com/v1/chat/completions',
@@ -93,65 +94,114 @@ async function generateGeminiPrompt({ description, systemPrompt, apiKey, modelNa
 
 export async function generateCode(prompt, config) {
   const { provider, apiKey, modelName, baseUrl } = config;
-  
-  // Handle Gemini separately using the Google AI SDK
-  if (provider === 'Google Gemini') {
-    const response = await generateGeminiPrompt({
-      description: prompt,
-      systemPrompt: DEFAULT_SYSTEM_PROMPT,
-      apiKey,
-      modelName,
-    });
-    return formatCode(response, provider);
-  }
-
-  let endpoint = PROVIDER_ENDPOINTS[provider];
-  if (provider === 'OpenAI Compatible') {
-    endpoint = `${baseUrl}/chat/completions`;
-  }
-
-  const headers = {
-    'Content-Type': 'application/json',
-  };
-
-  // Add provider-specific headers
-  switch (provider) {
-    case 'OpenAI':
-    case 'OpenAI Compatible':
-      headers['Authorization'] = `Bearer ${apiKey}`;
-      break;
-    case 'Anthropic':
-      headers['x-api-key'] = apiKey;
-      headers['anthropic-version'] = '2023-06-01';
-      break;
-  }
-
-  const body = {
-    ...formatPromptForProvider(prompt, provider),
-    ...(provider === 'OpenAI' || provider === 'OpenAI Compatible' ? {
-      model: modelName,
-      max_tokens: 2000,
-    } : {}),
-    ...(provider === 'Anthropic' ? {
-      model: modelName,
-      max_tokens: 2000,
-    } : {}),
-  };
+  const startTime = Date.now();
+  let response, formattedCode;
 
   try {
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body),
-    });
+    // Handle Gemini separately using the Google AI SDK
+    if (provider === 'Google Gemini') {
+      response = await generateGeminiPrompt({
+        description: prompt,
+        systemPrompt: DEFAULT_SYSTEM_PROMPT,
+        apiKey,
+        modelName,
+      });
+      formattedCode = formatCode(response, provider);
+      
+      // Save to history
+      savePrompt({
+        provider,
+        prompt: {
+          userPrompt: prompt,
+          systemPrompt: DEFAULT_SYSTEM_PROMPT,
+          fullPrompt: `${DEFAULT_SYSTEM_PROMPT}\n\n${prompt}`
+        },
+        response: {
+          rawResponse: response,
+          formattedCode
+        },
+        metadata: {
+          modelName: modelName || 'gemini-pro',
+          executionTime: Date.now() - startTime,
+          status: 'success'
+        }
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || `HTTP error! status: ${response.status}`);
+      return formattedCode;
     }
 
-    const data = await response.json();
-    return extractCodeFromResponse(data, provider);
+    let endpoint = PROVIDER_ENDPOINTS[provider];
+    if (provider === 'OpenAI Compatible') {
+      endpoint = `${baseUrl}/chat/completions`;
+    }
+
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add provider-specific headers
+    switch (provider) {
+      case 'OpenAI':
+      case 'OpenAI Compatible':
+        headers['Authorization'] = `Bearer ${apiKey}`;
+        break;
+      case 'Anthropic':
+        headers['x-api-key'] = apiKey;
+        headers['anthropic-version'] = '2023-06-01';
+        break;
+    }
+
+    const body = {
+      ...formatPromptForProvider(prompt, provider),
+      ...(provider === 'OpenAI' || provider === 'OpenAI Compatible' ? {
+        model: modelName,
+        max_tokens: 2000,
+      } : {}),
+      ...(provider === 'Anthropic' ? {
+        model: modelName,
+        max_tokens: 2000,
+      } : {}),
+    };
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const formattedCode = extractCodeFromResponse(data, provider);
+
+      // Save to history
+      savePrompt({
+        provider,
+        prompt: {
+          userPrompt: prompt,
+          systemPrompt: DEFAULT_SYSTEM_PROMPT,
+          fullPrompt: formatPromptForProvider(prompt, provider).messages[0].content
+        },
+        response: {
+          rawResponse: data,
+          formattedCode
+        },
+        metadata: {
+          modelName: modelName,
+          executionTime: Date.now() - startTime,
+          status: 'success'
+        }
+      });
+
+      return formattedCode;
+    } catch (error) {
+      console.error('Error generating code:', error);
+      throw new Error(`Failed to generate code: ${error.message}`);
+    }
   } catch (error) {
     console.error('Error generating code:', error);
     throw new Error(`Failed to generate code: ${error.message}`);

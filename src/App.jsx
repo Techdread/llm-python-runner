@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import CodeEditorPage from './pages/CodeEditorPage';
 import VisualEditorPage from './pages/VisualEditorPage';
+import PromptHistoryPage from './pages/PromptHistoryPage';
 import { ThemeProvider } from './context/ThemeContext';
 import { LLMProvider } from './context/LLMContext';
 import { lightTheme, darkTheme } from './theme';
@@ -111,6 +112,7 @@ function ThemedApp() {
               />
             } />
             <Route path="visual-editor" element={<VisualEditorPage />} />
+            <Route path="prompt-history" element={<PromptHistoryPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
