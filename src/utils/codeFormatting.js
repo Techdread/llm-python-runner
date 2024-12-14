@@ -90,23 +90,16 @@ function trimExtraLines(code) {
  * @returns {string} - Formatted and cleaned code
  */
 export function formatCode(code, provider) {
-  console.log('Input code:', code);
   if (!code) return '';
-
+  console.log('Input code:', code);
+  
   let formattedCode = code;
 
   // Apply general formatting
   formattedCode = normalizeLineEndings(formattedCode);
-  console.log('After normalizeLineEndings:', formattedCode);
-  
   formattedCode = removeLanguageTags(formattedCode);
-  console.log('After removeLanguageTags:', formattedCode);
-  
   formattedCode = removeCodeBlockMarkers(formattedCode);
-  console.log('After removeCodeBlockMarkers:', formattedCode);
-  
   formattedCode = trimExtraLines(formattedCode);
-  console.log('After trimExtraLines:', formattedCode);
 
   // Apply provider-specific formatting
   switch (provider) {

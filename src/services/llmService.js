@@ -96,12 +96,13 @@ export async function generateCode(prompt, config) {
   
   // Handle Gemini separately using the Google AI SDK
   if (provider === 'Google Gemini') {
-    return generateGeminiPrompt({
+    const response = await generateGeminiPrompt({
       description: prompt,
       systemPrompt: DEFAULT_SYSTEM_PROMPT,
       apiKey,
       modelName,
     });
+    return formatCode(response, provider);
   }
 
   let endpoint = PROVIDER_ENDPOINTS[provider];
