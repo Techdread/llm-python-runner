@@ -8,7 +8,6 @@ function CodeEditor({ code, onChange }) {
 
   return (
     <div className="bg-white rounded-lg p-4 shadow">
-      <h2 className="text-xl font-bold mb-4">Code Editor</h2>
       <div className="border rounded overflow-hidden">
         <Editor
           height="300px"

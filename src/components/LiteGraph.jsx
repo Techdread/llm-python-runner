@@ -97,7 +97,6 @@ function LiteGraphComponent() {
   if (error) {
     return (
       <div className="bg-white rounded-lg p-4 shadow">
-        <h2 className="text-xl font-bold mb-4">Visual Programming</h2>
         <div className="text-red-500">{error}</div>
       </div>
     );
@@ -105,7 +104,6 @@ function LiteGraphComponent() {
 
   return (
     <div className="bg-white rounded-lg p-4 shadow">
-      <h2 className="text-xl font-bold mb-4">Visual Programming</h2>
       <div style={{ height: '400px', position: 'relative', border: '1px solid #ccc', borderRadius: '4px' }}>
         <canvas
           ref={canvasRef}
